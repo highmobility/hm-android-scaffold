@@ -61,9 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
         // PASTE INIT SNIPPET HERE
 
-
         // Send command to the car through Telematics, make sure that the emulator is opened for this to work, otherwise "Vehicle asleep" will be returned
-        workWithTelematics();
+        // workWithTelematics();
 
         // Also make the device visible through Bluetooth to the car
         workWithBluetooth();
@@ -97,13 +96,12 @@ public class MainActivity extends AppCompatActivity {
 
          */
 
-        Manager.getInstance().downloadAccessCertificate("PASTE ACCESS TOKEN HERE", new Manager.DownloadCallback() {
+        Manager.getInstance().downloadCertificate("PASTE_ACCESS_TOKEN_HERE", new Manager.DownloadCallback() {
             @Override
             public void onDownloaded(byte[] serial) {
                 Log.d(TAG, "Certificate downloaded for vehicle: " + serial);
 
-                // Locking the car doors
-                Manager.getInstance().getTelematics().sendTelematicsCommand(Command.DoorLocks.lockDoors(false), serial, new Telematics.CommandCallback() {
+                Manager.getInstance().getTelematics().sendCommand(Command.DoorLocks.lockDoors(false), serial, new Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(byte[] bytes) {
                         try {
@@ -167,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 connectedLink.setListener(new ConnectedLinkListener() {
 
                     @Override
-                    public void onAuthorizationRequested(ConnectedLink connectedLink, ConnectedLink.AuthorizationCallback authorizationCallback) {
+                    public void onAuthorizationRequested(ConnectedLink connectedLink, ConnectedLinkListener.AuthorizationCallback authorizationCallback) {
                         // Approving without user input
                         authorizationCallback.approve();
                     }
