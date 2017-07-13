@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         // PASTE INIT SNIPPET HERE
 
         // Send command to the car through Telematics, make sure that the emulator is opened for this to work, otherwise "Vehicle asleep" will be returned
-        // workWithTelematics();
+        workWithTelematics();
 
         // Also make the device visible through Bluetooth to the car
         workWithBluetooth();
