@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         /*
          Before using HMKit, you must initialise it with a snippet from the Developer Center:
-         - go to https://developers.high-mobility.com
+         - go to the Developer Center
          - LOGIN
          - choose DEVELOP (in top-left, the (2nd) button with a spanner)
          - choose APPLICATIONS (in the left)
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         /*
 
          Before using Telematics in HMKit, you must get the Access Certificate for the car / emulator:
-         - go to https://developers.high-mobility.com
+         - go to the Developer Center
          - LOGIN
          - go to Tutorials ›› SDK ›› Android for instructions to connect a service to the car
          - authorise the service
