@@ -4,12 +4,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.highmobility.autoapi.Capabilities;
+import com.highmobility.autoapi.Command;
+import com.highmobility.autoapi.CommandParseException;
+import com.highmobility.autoapi.CommandResolver;
+import com.highmobility.autoapi.GetCapabilities;
+import com.highmobility.autoapi.GetVehicleStatus;
+import com.highmobility.autoapi.LockState;
+import com.highmobility.autoapi.LockUnlockDoors;
+import com.highmobility.autoapi.VehicleStatus;
+import com.highmobility.autoapi.property.DoorLockProperty;
 import com.highmobility.hmkit.Broadcaster;
 import com.highmobility.hmkit.BroadcasterListener;
-import com.highmobility.hmkit.Command.Command;
-import com.highmobility.hmkit.Command.CommandParseException;
-import com.highmobility.hmkit.Command.Incoming.IncomingCommand;
-import com.highmobility.hmkit.Command.Incoming.LockState;
+
 import com.highmobility.hmkit.ConnectedLink;
 import com.highmobility.hmkit.ConnectedLinkListener;
 import com.highmobility.hmkit.Error.BroadcastError;
@@ -28,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Manager.environment = Manager.Environment.TEST;
 
         /*
          Before using HMKit, you must initialise it with a snippet from the Developer Center:
@@ -58,6 +66,13 @@ public class MainActivity extends AppCompatActivity {
             );
 
          */
+
+        Manager.getInstance().initialize(
+                "dGVzdA+dICVkH+8UibwovXkdf7lqfAOrgTBWRdOYBSjDQqYVu7Du5gK7J9QagfBmK3/ggpb8olHGsLp8aOjWds+YS/6WBrFuOd3F4rZXHdleNPgwSCZbHPjkIkymfxhhSRygAxAJQf5wPhmHKc+3jwlGRT6BrtwjhDEkkKOClMJAUfuRKN4kz5rRNzbgAYhirscpYTytfQLp",
+                "b7rbR4dUj2JIta+hazp29muxw6uHTbQ5WMPTKxCiuak=",
+                "0BQbKCHQzVz822pgdbrkr4IqA9hvamocXcpe+1OkSLrml9CXwejWnbf/22jNDJGmphL8MJvCMjK1Cuw4dIE0ow==",
+                getApplicationContext()
+        );
 
         // PASTE INIT SNIPPET HERE
 
@@ -96,24 +111,27 @@ public class MainActivity extends AppCompatActivity {
 
          */
 
-        Manager.getInstance().downloadCertificate("PASTE_ACCESS_TOKEN_HERE", new Manager.DownloadCallback() {
+        Manager.getInstance().downloadCertificate("udT05QnK3CnOBc09-PQEHyyqEhoObNVbzH9f-BIIy91Q5AxE2BS2H- 5RsEbWUxCxnVmGj4z__trnAbM-dAAuX_fScR1eYRICaVRMWVyXkZud3lbZbIxxdAjbBJrXnqTmnw", new Manager.DownloadCallback() {
             @Override
             public void onDownloaded(byte[] serial) {
                 Log.d(TAG, "Certificate downloaded for vehicle: " + serial);
 
-                Manager.getInstance().getTelematics().sendCommand(Command.DoorLocks.lockDoors(false), serial, new Telematics.CommandCallback() {
+                byte[] command = new LockUnlockDoors(DoorLockProperty.LockState.UNLOCKED).getBytes();
+
+                Manager.getInstance().getTelematics().sendCommand(command, serial, new Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(byte[] bytes) {
                         try {
-                            IncomingCommand command = IncomingCommand.create(bytes);
+                            Command command = CommandResolver.resolve(bytes);
 
-                            if (command.is(Command.DoorLocks.LOCK_STATE)) {
+
+                            if (command instanceof LockState) {
                                 LockState state = (LockState) command;
 
-                                Log.d(TAG, "Front left state: " + state.getFrontLeft());
-                                Log.d(TAG, "Front right state: " + state.getFrontRight());
-                                Log.d(TAG, "Rear right state: " + state.getRearRight());
-                                Log.d(TAG, "Rear left state: " + state.getRearLeft());
+                                Log.d(TAG, "Front left state: " + state.getDoorLockState(DoorLockProperty.Location.FRONT_LEFT).getLockState());
+                                Log.d(TAG, "Front right state: " + state.getDoorLockState(DoorLockProperty.Location.FRONT_RIGHT).getLockState());
+                                Log.d(TAG, "Rear right state: " + state.getDoorLockState(DoorLockProperty.Location.REAR_RIGHT).getLockState());
+                                Log.d(TAG, "Rear left state: " + state.getDoorLockState(DoorLockProperty.Location.REAR_LEFT).getLockState());
                             }
                         }
                         catch (CommandParseException e) {
@@ -148,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLinkReceived(ConnectedLink connectedLink) {
                 if (connectedLink.getState() == Link.State.AUTHENTICATED) {
-                    connectedLink.sendCommand(Command.Capabilities.getCapabilities(), new Link.CommandCallback() {
+                    byte[] command = new GetCapabilities().getBytes();
+                    connectedLink.sendCommand(command, new Link.CommandCallback() {
                         @Override
                         public void onCommandSent() {
                             Log.d(TAG, "Command successfully sent through Bluetooth");
@@ -179,8 +198,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onStateChanged(Link link, Link.State state) {
 
                         if (link.getState() == Link.State.AUTHENTICATED) {
-
-                            link.sendCommand(Command.Capabilities.getCapabilities(), new Link.CommandCallback() {
+                            byte[] command = new GetCapabilities().getBytes();
+                            link.sendCommand(command, new Link.CommandCallback() {
                                 @Override
                                 public void onCommandSent() {
                                     Log.d(TAG, "Command successfully sent through Bluetooth");
@@ -197,11 +216,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCommandReceived(Link link, byte[] bytes) {
                         try {
-                            IncomingCommand command = IncomingCommand.create(bytes);
+                            Command command = CommandResolver.resolve(bytes);
 
-                            if (command.is(Command.Capabilities.CAPABILITIES)) {
+                            if (command instanceof Capabilities) {
 
-                                link.sendCommand(Command.VehicleStatus.getVehicleStatus(), new Link.CommandCallback() {
+                                link.sendCommand(new GetVehicleStatus().getBytes(), new Link.CommandCallback() {
                                     @Override
                                     public void onCommandSent() {
                                         Log.d(TAG, "Command successfully sent through Bluetooth");
@@ -213,8 +232,8 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             }
-                            else if (command.is(Command.VehicleStatus.VEHICLE_STATUS)) {
-
+                            else if (command instanceof VehicleStatus) {
+                                Log.d("hm", "onCommandReceived: Vehicle Status");
                             }
                         }
                         catch (CommandParseException e) {
