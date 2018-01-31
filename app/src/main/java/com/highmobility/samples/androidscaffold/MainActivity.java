@@ -67,13 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
          */
 
-        Manager.getInstance().initialize(
-                "dGVzdA+dICVkH+8UibwovXkdf7lqfAOrgTBWRdOYBSjDQqYVu7Du5gK7J9QagfBmK3/ggpb8olHGsLp8aOjWds+YS/6WBrFuOd3F4rZXHdleNPgwSCZbHPjkIkymfxhhSRygAxAJQf5wPhmHKc+3jwlGRT6BrtwjhDEkkKOClMJAUfuRKN4kz5rRNzbgAYhirscpYTytfQLp",
-                "b7rbR4dUj2JIta+hazp29muxw6uHTbQ5WMPTKxCiuak=",
-                "0BQbKCHQzVz822pgdbrkr4IqA9hvamocXcpe+1OkSLrml9CXwejWnbf/22jNDJGmphL8MJvCMjK1Cuw4dIE0ow==",
-                getApplicationContext()
-        );
-
         // PASTE INIT SNIPPET HERE
 
         // Send command to the car through Telematics, make sure that the emulator is opened for this to work, otherwise "Vehicle asleep" will be returned
