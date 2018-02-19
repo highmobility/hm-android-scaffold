@@ -38,37 +38,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.environment = Manager.Environment.TEST;
 
+
         /*
-         Before using HMKit, you must initialise it with a snippet from the Developer Center:
-         - go to the Developer Center
-         - LOGIN
-         - choose DEVELOP (in top-left, the (2nd) button with a spanner)
-         - choose APPLICATIONS (in the left)
-         - look for SANDBOX app
-         - click on the "Device Certificates" on the app
-         - choose the SANDBOX DEVICE
-         - copy the whole snippet
-         - paste it below this comment box
-         - you made it!
-
-         Bonus steps after completing the above:
-         - relax
-         - celebrate
-         - explore the APIs
-
-
-         An example of a snippet copied from the Developer Center (do not use, will obviously not work):
-
-            Manager.getInstance().initialize(
-                Base64String,
-                Base64String,
-                Base64String,
-                getApplicationContext()
-            );
-
+         * Before using HMKit, you'll have to initialise the Manager singleton
+         * with a snippet from the Platform Workspace:
+         *
+         *   1. Sign in to the workspace
+         *   2. Go to the LEARN section and choose Android
+         *   3. Follow the Getting Started instructions
+         *
+         * By the end of the tutorial you will have a snippet for initialisation,
+         * that looks something like this:
+         *
+         *   Manager.getInstance().initialize(
+         *     Base64String,
+         *     Base64String,
+         *     Base64String,
+         *     getApplicationContext()
+         *   );
          */
 
-        // PASTE INIT SNIPPET HERE
+        // PASTE THE SNIPPET HERE
 
         // Send command to the car through Telematics, make sure that the emulator is opened for
         // this to work, otherwise "Vehicle asleep" will be returned
