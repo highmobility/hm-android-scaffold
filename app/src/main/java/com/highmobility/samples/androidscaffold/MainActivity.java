@@ -1,12 +1,11 @@
 package com.highmobility.samples.androidscaffold;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.highmobility.autoapi.Capabilities;
 import com.highmobility.autoapi.Command;
-import com.highmobility.autoapi.CommandParseException;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.GetCapabilities;
 import com.highmobility.autoapi.GetVehicleStatus;
@@ -28,7 +27,7 @@ import com.highmobility.hmkit.Manager;
 import com.highmobility.hmkit.Telematics;
 import com.highmobility.utils.Bytes;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private static final String TAG = "Scaffold";
 
@@ -37,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Manager.environment = Manager.Environment.TEST;
-
 
         /*
          * Before using HMKit, you'll have to initialise the Manager singleton
@@ -69,91 +67,61 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void workWithTelematics() {
-        /*
-         Before using Telematics in HMKit, you must get the Access Certificate for the car /
-         emulator:
-         - go to the Developer Center
-         - LOGIN
-         - go to Tutorials ›› SDK ›› Android for instructions to connect a service to the car
-         - authorise the service
-         - take a good look into the mirror, you badass
-         - open the SANDBOX car emulator
-         - on the left, in the Authorised Services list, choose the Service you used before
-         - copy the ACCESS TOKEN
-         - paste it below to the appropriately named variable
+        Manager.getInstance().downloadCertificate("b47012ed-e6f8-4df9-a598-492eff965893", new
+                Manager.DownloadCallback() {
+            @Override
+            public void onDownloaded(byte[] serial) {
+                Log.d(TAG, "Certificate downloaded for vehicle: " + Bytes.hexFromBytes
+                        (serial));
 
-         Bonus steps again:
-         - get a beverage
-         - quench your thirst
-         - change the world with your mind
-         - explore the APIs
+                byte[] command = new GetVehicleStatus().getBytes();
+                Manager.getInstance().getTelematics().sendCommand(command, serial, new
+                        Telematics
+                                .CommandCallback() {
+                            @Override
+                            public void onCommandResponse(byte[] bytes) {
+                                Command command = CommandResolver.resolve(bytes);
 
-         An example of an access token:
+                                if (command instanceof LockState) {
+                                    LockState state = (LockState) command;
 
-         awb4oQwMHxomS926XHyqdx1d9nYLYs94GvlJYQCblbP_wt-aBrpNpmSFf2qvhj18GWXXQ
-         -aAtSaa4rnwBAHs5wpe1aK-3bD4xfQ3qtOS1QNV3a3iJVg03lTdNOLjFxlIOA
+                                    Log.d(TAG, "Front left state: " + state
+                                            .getDoorLockState
+                                                    (DoorLockProperty.Location
+                                                            .FRONT_LEFT)
+                                            .getLockState());
+                                    Log.d(TAG, "Front right state: " + state
+                                            .getDoorLockState
+                                                    (DoorLockProperty.Location
+                                                            .FRONT_RIGHT)
+                                            .getLockState());
+                                    Log.d(TAG, "Rear right state: " + state
+                                            .getDoorLockState
+                                                    (DoorLockProperty.Location
+                                                            .REAR_RIGHT)
+                                            .getLockState());
+                                    Log.d(TAG, "Rear left state: " + state
+                                            .getDoorLockState
+                                                    (DoorLockProperty.Location
+                                                            .REAR_LEFT)
+                                            .getLockState());
+                                }
+                            }
 
-         */
-        Manager.getInstance().downloadCertificate("DfuvdzxDkPJPwQPR0bE47rgVzAkcKtqM9oH7IrY6ehLbflCM5OgnQP_dWbh5nD3-6rOTx5qPmJxKzXihaIYeNH8kqL1H3abIkXTTjJKAwD8uWfocYroiFPGMgQwxAuA9CA", new Manager.DownloadCallback() {
-                    @Override
-                    public void onDownloaded(byte[] serial) {
-                        Log.d(TAG, "Certificate downloaded for vehicle: " + Bytes.hexFromBytes
-                                (serial));
+                            @Override
+                            public void onCommandFailed(TelematicsError error) {
+                                Log.d(TAG, "Could not send a command through telematics: " +
+                                        "" + error.getCode() + " " + error.getMessage());
+                            }
+                        });
+            }
 
-                        byte[] command = new LockUnlockDoors(DoorLockProperty.LockState.UNLOCKED)
-                                .getBytes();
-
-                        Manager.getInstance().getTelematics().sendCommand(command, serial, new
-                                Telematics
-                                        .CommandCallback() {
-                                    @Override
-                                    public void onCommandResponse(byte[] bytes) {
-                                        try {
-                                            Command command = CommandResolver.resolve(bytes);
-
-                                            if (command instanceof LockState) {
-                                                LockState state = (LockState) command;
-
-                                                Log.d(TAG, "Front left state: " + state
-                                                        .getDoorLockState
-                                                                (DoorLockProperty.Location
-                                                                        .FRONT_LEFT)
-                                                        .getLockState());
-                                                Log.d(TAG, "Front right state: " + state
-                                                        .getDoorLockState
-                                                                (DoorLockProperty.Location
-                                                                        .FRONT_RIGHT)
-                                                        .getLockState());
-                                                Log.d(TAG, "Rear right state: " + state
-                                                        .getDoorLockState
-                                                                (DoorLockProperty.Location
-                                                                        .REAR_RIGHT)
-                                                        .getLockState());
-                                                Log.d(TAG, "Rear left state: " + state
-                                                        .getDoorLockState
-                                                                (DoorLockProperty.Location
-                                                                        .REAR_LEFT)
-                                                        .getLockState());
-                                            }
-                                        } catch (CommandParseException e) {
-                                            Log.e(TAG, e.getLocalizedMessage());
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCommandFailed(TelematicsError error) {
-                                        Log.d(TAG, "Could not send a command through telematics: " +
-                                                "" + error.getCode() + " " + error.getMessage());
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onDownloadFailed(DownloadAccessCertificateError error) {
-                        Log.d(TAG, "Could not download a certificate with token: " + error
-                                .getMessage());
-                    }
-                });
+            @Override
+            public void onDownloadFailed(DownloadAccessCertificateError error) {
+                Log.d(TAG, "Could not download a certificate with token: " + error
+                        .getMessage());
+            }
+        });
     }
 
     private void workWithBluetooth() {
@@ -204,31 +172,26 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onCommandReceived(final Link link, byte[] bytes) {
-                        try {
-                            final Command command = CommandResolver.resolve(bytes);
-                            if (command instanceof Capabilities) {
-                                link.sendCommand(new GetVehicleStatus().getBytes(), new
-                                        Link.CommandCallback() {
-                                            @Override
-                                            public void onCommandSent() {
-                                                Log.d(TAG, "VS Command successfully " +
-                                                        "sent through " +
-                                                        "Bluetooth");
-                                            }
+                        final Command command = CommandResolver.resolve(bytes);
+                        if (command instanceof Capabilities) {
+                            link.sendCommand(new GetVehicleStatus().getBytes(), new
+                                    Link.CommandCallback() {
+                                        @Override
+                                        public void onCommandSent() {
+                                            Log.d(TAG, "VS Command successfully " +
+                                                    "sent through " +
+                                                    "Bluetooth");
+                                        }
 
-                                            @Override
-                                            public void onCommandFailed(LinkError
-                                                                                linkError) {
+                                        @Override
+                                        public void onCommandFailed(LinkError
+                                                                            linkError) {
 
-                                            }
-                                        });
+                                        }
+                                    });
 
-                            } else if (command instanceof VehicleStatus) {
-                                Log.d("hm", "onCommandReceived: Vehicle Status");
-                            }
-
-                        } catch (CommandParseException e) {
-                            Log.e(TAG, e.getLocalizedMessage());
+                        } else if (command instanceof VehicleStatus) {
+                            Log.d("hm", "onCommandReceived: Vehicle Status");
                         }
                     }
 

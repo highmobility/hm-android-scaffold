@@ -22,13 +22,10 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    implementation('com.highmobility:hmkit-android:1.1.11@aar')
-    implementation 'com.highmobility:hmkit-auto-api:1.6.1'
+    implementation 'com.highmobility:hmkit-android:1.1.12@aar'
+    implementation 'com.highmobility:hmkit-auto-api:1.6.2-0'
     implementation 'com.highmobility:hmkit-crypto:1.1.10'
     implementation 'com.android.volley:volley:1.1.0'
-    
     testCompile 'junit:junit:4.12'
 }
