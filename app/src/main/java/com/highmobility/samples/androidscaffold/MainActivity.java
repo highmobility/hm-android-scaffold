@@ -69,6 +69,7 @@ public class MainActivity extends Activity {
 
     private void workWithTelematics() {
         String accessToken = ""; // PASTE ACCESS TOKEN HERE
+        Manager.getInstance().downloadCertificate(accessToken, new
                 Manager.DownloadCallback() {
                     @Override
                     public void onDownloaded(byte[] serial) {
