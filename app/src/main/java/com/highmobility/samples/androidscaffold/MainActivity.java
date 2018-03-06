@@ -36,7 +36,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Manager.environment = Manager.Environment.TEST;
 
         /*
          * Before using HMKit, you'll have to initialise the Manager singleton
