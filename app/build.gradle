@@ -24,7 +24,7 @@ dependencies {
     })
     testCompile 'junit:junit:4.12'
 
-    implementation('com.highmobility:hmkit-android:1.1.13@aar') {
+    implementation('com.highmobility:hmkit-android:1.1.14@aar') {
         transitive=true
     }
     implementation 'com.highmobility:hmkit-auto-api:1.6.3'
