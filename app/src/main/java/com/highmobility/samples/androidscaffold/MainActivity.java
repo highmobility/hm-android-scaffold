@@ -25,7 +25,7 @@ import com.highmobility.hmkit.error.DownloadAccessCertificateError;
 import com.highmobility.hmkit.error.LinkError;
 import com.highmobility.hmkit.error.TelematicsError;
 import com.highmobility.value.Bytes;
-import com.highmobility.value.DeviceSerial;
+import com.highmobility.crypto.value.DeviceSerial;
 
 public class MainActivity extends Activity {
 
@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
 
         // PASTE THE SNIPPET HERE
 
-        String accessToken = ""; // PASTE ACCESS TOKEN HERE
+        String accessToken = "";
 
         Manager.getInstance().downloadCertificate(accessToken, new Manager.DownloadCallback() {
             @Override
