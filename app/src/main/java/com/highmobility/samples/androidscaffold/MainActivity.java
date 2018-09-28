@@ -13,19 +13,19 @@ import com.highmobility.autoapi.GetVehicleStatus;
 import com.highmobility.autoapi.LockState;
 import com.highmobility.autoapi.VehicleStatus;
 import com.highmobility.autoapi.property.doors.DoorLocation;
+import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
 import com.highmobility.hmkit.BroadcasterListener;
 import com.highmobility.hmkit.ConnectedLink;
 import com.highmobility.hmkit.ConnectedLinkListener;
+import com.highmobility.hmkit.HMKit;
 import com.highmobility.hmkit.Link;
-import com.highmobility.hmkit.Manager;
 import com.highmobility.hmkit.Telematics;
 import com.highmobility.hmkit.error.BroadcastError;
 import com.highmobility.hmkit.error.DownloadAccessCertificateError;
 import com.highmobility.hmkit.error.LinkError;
 import com.highmobility.hmkit.error.TelematicsError;
 import com.highmobility.value.Bytes;
-import com.highmobility.crypto.value.DeviceSerial;
 
 public class MainActivity extends Activity {
 
@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         /*
-         * Before using HMKit, you'll have to initialise the Manager singleton
+         * Before using HMKit, you'll have to initialise the HMKit singleton
          * with a snippet from the Platform Workspace:
          *
          *   1. Sign in to the workspace
@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
          * By the end of the tutorial you will have a snippet for initialisation,
          * that looks something like this:
          *
-         *   Manager.getInstance().initialize(
+         *   HMKit.getInstance().initialise(
          *     Base64String,
          *     Base64String,
          *     Base64String,
@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
 
         String accessToken = "";
 
-        Manager.getInstance().downloadCertificate(accessToken, new Manager.DownloadCallback() {
+        HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
             public void onDownloaded(DeviceSerial serial) {
                 Log.d(TAG, "Certificate downloaded for vehicle: " + serial);
@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
 
     private void workWithTelematics(DeviceSerial serial) {
         Command command = new GetLockState();
-        Manager.getInstance().getTelematics().sendCommand(command, serial, new
+        HMKit.getInstance().getTelematics().sendCommand(command, serial, new
                 Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(Bytes bytes) {
@@ -129,7 +129,7 @@ public class MainActivity extends Activity {
 
     private void workWithBluetooth() {
         // Start Bluetooth broadcasting, so that the car can connect to this device
-        final Broadcaster broadcaster = Manager.getInstance().getBroadcaster();
+        final Broadcaster broadcaster = HMKit.getInstance().getBroadcaster();
 
         broadcaster.setListener(new BroadcasterListener() {
             @Override
@@ -185,8 +185,7 @@ public class MainActivity extends Activity {
                                         @Override
                                         public void onCommandSent() {
                                             Log.d(TAG, "VS Command successfully " +
-                                                    "sent through " +
-                                                    "Bluetooth");
+                                                    "sent through Bluetooth");
                                         }
 
                                         @Override
@@ -197,7 +196,7 @@ public class MainActivity extends Activity {
                                     });
 
                         } else if (command instanceof VehicleStatus) {
-                            VehicleStatus status = (VehicleStatus)command;
+                            VehicleStatus status = (VehicleStatus) command;
                             Log.d("hm", "BLE Vehicle Status received\nvin:" + status.getVin());
 
                         }
