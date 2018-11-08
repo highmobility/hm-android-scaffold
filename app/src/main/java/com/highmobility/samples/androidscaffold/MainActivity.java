@@ -56,7 +56,6 @@ public class MainActivity extends Activity {
          */
 
         // PASTE THE SNIPPET HERE
-
         String accessToken = "";
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
@@ -73,58 +72,41 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadFailed(DownloadAccessCertificateError error) {
-                Log.e(TAG, "Could not download a certificate with token: " + error
-                        .getMessage());
+                Log.e(TAG, "Could not download a certificate with token: " + error.getMessage());
             }
         });
     }
 
     private void workWithTelematics(DeviceSerial serial) {
         Command command = new GetLockState();
-        HMKit.getInstance().getTelematics().sendCommand(command, serial, new
-                Telematics.CommandCallback() {
+        HMKit.getInstance().getTelematics().sendCommand(command, serial,
+                new Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(Bytes bytes) {
-
                         Command command = CommandResolver.resolve(bytes);
 
                         if (command instanceof LockState) {
                             LockState state = (LockState) command;
                             Log.d(TAG, "Telematics GetLockState response: ");
                             Log.d(TAG, "Front left state: " + state
-                                    .getDoorLockAndPositionState(DoorLocation
-                                            .FRONT_LEFT)
-                                    .getDoorLock());
+                                    .getLock(DoorLocation.FRONT_LEFT).getLock());
                             Log.d(TAG, "Front right state: " + state
-                                    .getDoorLockAndPositionState(DoorLocation
-                                            .FRONT_RIGHT)
-                                    .getDoorLock());
-
+                                    .getLock(DoorLocation.FRONT_RIGHT).getLock());
                             Log.d(TAG, "Rear right state: " + state
-                                    .getDoorLockAndPositionState(DoorLocation
-                                            .REAR_RIGHT)
-                                    .getDoorLock());
-
+                                    .getLock(DoorLocation.REAR_RIGHT).getLock());
                             Log.d(TAG, "Rear left state: " + state
-                                    .getDoorLockAndPositionState(DoorLocation
-                                            .REAR_LEFT)
-                                    .getDoorLock());
-
+                                    .getLock(DoorLocation.REAR_LEFT).getLock());
                         } else if (command instanceof VehicleStatus) {
-                            Log.d(TAG, "vin: " + ((VehicleStatus) command)
-                                    .getVin());
+                            Log.d(TAG, "vin: " + ((VehicleStatus) command).getVin());
                         }
                     }
 
                     @Override
                     public void onCommandFailed(TelematicsError error) {
                         Log.d(TAG, "Could not send a command through " +
-                                "telematics: " +
-                                "" + error.getCode() + " " + error.getMessage
-                                ());
+                                "telematics: " + "" + error.getCode() + " " + error.getMessage());
                     }
                 });
-
     }
 
     private void workWithBluetooth() {
