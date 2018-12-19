@@ -11,8 +11,10 @@ import com.highmobility.autoapi.GetCapabilities;
 import com.highmobility.autoapi.GetLockState;
 import com.highmobility.autoapi.GetVehicleStatus;
 import com.highmobility.autoapi.LockState;
+import com.highmobility.autoapi.LockUnlockDoors;
 import com.highmobility.autoapi.VehicleStatus;
 import com.highmobility.autoapi.property.doors.DoorLocation;
+import com.highmobility.autoapi.property.value.Lock;
 import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
 import com.highmobility.hmkit.BroadcasterListener;
@@ -78,6 +80,24 @@ public class MainActivity extends Activity {
     }
 
     private void workWithTelematics(DeviceSerial serial) {
+
+
+        HMKit.getInstance().getTelematics().sendCommand(new LockUnlockDoors(Lock.UNLOCKED), serial, new Telematics.CommandCallback() {
+            @Override
+            public void onCommandResponse(Bytes bytes) {
+                // Parse command here
+                Command command = CommandResolver.resolve(bytes);
+
+                if (command instanceof LockState) {
+                    // Your code here
+                }
+            }
+
+            @Override
+            public void onCommandFailed(TelematicsError error) {}
+        });
+
+
         Command command = new GetLockState();
         HMKit.getInstance().getTelematics().sendCommand(command, serial,
                 new Telematics.CommandCallback() {
