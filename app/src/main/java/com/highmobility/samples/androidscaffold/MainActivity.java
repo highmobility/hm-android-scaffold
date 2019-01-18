@@ -133,6 +133,8 @@ public class MainActivity extends Activity {
         // Start Bluetooth broadcasting, so that the car can connect to this device
         final Broadcaster broadcaster = HMKit.getInstance().getBroadcaster();
 
+        if (broadcaster == null) return; // emulator
+
         broadcaster.setListener(new BroadcasterListener() {
             @Override
             public void onStateChanged(Broadcaster.State state) {
