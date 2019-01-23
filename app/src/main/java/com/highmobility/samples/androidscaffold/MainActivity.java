@@ -13,7 +13,7 @@ import com.highmobility.autoapi.GetVehicleStatus;
 import com.highmobility.autoapi.LockState;
 import com.highmobility.autoapi.LockUnlockDoors;
 import com.highmobility.autoapi.VehicleStatus;
-import com.highmobility.autoapi.property.doors.DoorLocation;
+import com.highmobility.autoapi.property.value.Location;
 import com.highmobility.autoapi.property.value.Lock;
 import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
@@ -80,23 +80,22 @@ public class MainActivity extends Activity {
     }
 
     private void workWithTelematics(DeviceSerial serial) {
+        HMKit.getInstance().getTelematics().sendCommand(new LockUnlockDoors(Lock.UNLOCKED),
+                serial, new Telematics.CommandCallback() {
+                    @Override
+                    public void onCommandResponse(Bytes bytes) {
+                        // Parse command here
+                        Command command = CommandResolver.resolve(bytes);
 
+                        if (command instanceof LockState) {
+                            // Your code here
+                        }
+                    }
 
-        HMKit.getInstance().getTelematics().sendCommand(new LockUnlockDoors(Lock.UNLOCKED), serial, new Telematics.CommandCallback() {
-            @Override
-            public void onCommandResponse(Bytes bytes) {
-                // Parse command here
-                Command command = CommandResolver.resolve(bytes);
-
-                if (command instanceof LockState) {
-                    // Your code here
-                }
-            }
-
-            @Override
-            public void onCommandFailed(TelematicsError error) {}
-        });
-
+                    @Override
+                    public void onCommandFailed(TelematicsError error) {
+                    }
+                });
 
         Command command = new GetLockState();
         HMKit.getInstance().getTelematics().sendCommand(command, serial,
@@ -109,13 +108,13 @@ public class MainActivity extends Activity {
                             LockState state = (LockState) command;
                             Log.d(TAG, "Telematics GetLockState response: ");
                             Log.d(TAG, "Front left state: " + state
-                                    .getLock(DoorLocation.FRONT_LEFT).getLock());
+                                    .getOutsideLock(Location.FRONT_LEFT).getLock());
                             Log.d(TAG, "Front right state: " + state
-                                    .getLock(DoorLocation.FRONT_RIGHT).getLock());
+                                    .getOutsideLock(Location.FRONT_RIGHT).getLock());
                             Log.d(TAG, "Rear right state: " + state
-                                    .getLock(DoorLocation.REAR_RIGHT).getLock());
+                                    .getOutsideLock(Location.REAR_RIGHT).getLock());
                             Log.d(TAG, "Rear left state: " + state
-                                    .getLock(DoorLocation.REAR_LEFT).getLock());
+                                    .getOutsideLock(Location.REAR_LEFT).getLock());
                         } else if (command instanceof VehicleStatus) {
                             Log.d(TAG, "vin: " + ((VehicleStatus) command).getVin());
                         }
@@ -146,9 +145,7 @@ public class MainActivity extends Activity {
                 connectedLink.setListener(new ConnectedLinkListener() {
                     @Override
                     public void onAuthorizationRequested(ConnectedLink connectedLink,
-                                                         ConnectedLinkListener
-                                                                 .AuthorizationCallback
-                                                                 authorizationCallback) {
+                                                         ConnectedLinkListener.AuthorizationCallback authorizationCallback) {
                         // Approving without user input
                         authorizationCallback.approve();
                     }
