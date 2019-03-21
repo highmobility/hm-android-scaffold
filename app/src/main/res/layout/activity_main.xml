@@ -15,14 +15,9 @@
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
+            android:textAlignment="center"
+            android:text="HMKit Scaffold\nResults in log"
             android:id="@+id/textView"/>
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send"/>
 
     </LinearLayout>
 </RelativeLayout>
