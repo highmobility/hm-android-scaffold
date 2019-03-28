@@ -5,10 +5,19 @@
                 android:layout_height="match_parent"
                 tools:context="com.highmobility.samples.androidscaffold.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
         android:layout_centerInParent="true"
-        android:text="HMKit Scaffold"/>
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="HMKit Scaffold\nResults in log"
+            android:id="@+id/textView"/>
+
+    </LinearLayout>
 </RelativeLayout>

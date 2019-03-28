@@ -13,8 +13,8 @@ import com.highmobility.autoapi.GetVehicleStatus;
 import com.highmobility.autoapi.LockState;
 import com.highmobility.autoapi.LockUnlockDoors;
 import com.highmobility.autoapi.VehicleStatus;
-import com.highmobility.autoapi.property.value.Location;
-import com.highmobility.autoapi.property.value.Lock;
+import com.highmobility.autoapi.value.Location;
+import com.highmobility.autoapi.value.Lock;
 import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
 import com.highmobility.hmkit.BroadcasterListener;
@@ -108,13 +108,13 @@ public class MainActivity extends Activity {
                             LockState state = (LockState) command;
                             Log.d(TAG, "Telematics GetLockState response: ");
                             Log.d(TAG, "Front left state: " + state
-                                    .getOutsideLock(Location.FRONT_LEFT).getLock());
+                                    .getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
                             Log.d(TAG, "Front right state: " + state
-                                    .getOutsideLock(Location.FRONT_RIGHT).getLock());
+                                    .getOutsideLock(Location.FRONT_RIGHT).getValue().getLock());
                             Log.d(TAG, "Rear right state: " + state
-                                    .getOutsideLock(Location.REAR_RIGHT).getLock());
+                                    .getOutsideLock(Location.REAR_RIGHT).getValue().getLock());
                             Log.d(TAG, "Rear left state: " + state
-                                    .getOutsideLock(Location.REAR_LEFT).getLock());
+                                    .getOutsideLock(Location.REAR_LEFT).getValue().getLock());
                         } else if (command instanceof VehicleStatus) {
                             Log.d(TAG, "vin: " + ((VehicleStatus) command).getVin());
                         }
