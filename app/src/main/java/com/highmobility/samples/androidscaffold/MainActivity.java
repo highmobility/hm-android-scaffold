@@ -2,7 +2,6 @@ package com.highmobility.samples.androidscaffold;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.highmobility.autoapi.Capabilities;
 import com.highmobility.autoapi.Command;
@@ -29,9 +28,12 @@ import com.highmobility.hmkit.error.LinkError;
 import com.highmobility.hmkit.error.TelematicsError;
 import com.highmobility.value.Bytes;
 
-public class MainActivity extends Activity {
+import timber.log.Timber;
 
-    private static final String TAG = "Scaffold";
+import static timber.log.Timber.d;
+import static timber.log.Timber.e;
+
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +58,23 @@ public class MainActivity extends Activity {
          *     getApplicationContext()
          *   );
          */
-
+        Timber.plant(new Timber.DebugTree());
         // PASTE THE SNIPPET HERE
-        String accessToken = "";
+        HMKit.getInstance().initialise(
+                "dGVzdLnVeFXsIJTMMDWwwF7qX" +
+                        "/RAYcXdpTzQFbxNYs0vJcq8RpyN1HbA5PCTqJ8CI2urU8PO1YvV1mP4nJuEqHQpq9Dzl0UJiGglp3a3uBqXVTGy0+LwQ0MROMNAYh+Tdp2yIqvU6Uy5yboLcrHLLUHDZEguiGEnVP0pNH+uCaHca4/CiNnmKEm67pZqXtnDDH0NHqP2LEsi",
+                "CDh9oEK5koiw/4VhUT16FEeB6Z+6TRw9mup2aGoYlCM=",
+                "K5mVFoq2rqKwAttWdIyPhwgVL80FNxkkNpgr/ca+ueq3JFn5iMLAMTJOKzG26qwtqrLO" +
+                        "+z2sxxdwWNaItdBUWg==",
+                getApplicationContext());
+        String accessToken =
+                "Rp1wTWvW79qKE6iwGpYBimM12y" +
+                        "-Z_Y5L6oAc2ytoyBc7S6leh88a8kQbCpPDsft7bAU3DNea02FQsJQWKJGB2zU79oTedzkWTIhqu6fv9jamQta9952aWEheHbYJ-xQ8Ng";
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
             public void onDownloaded(DeviceSerial serial) {
-                Log.d(TAG, "Certificate downloaded for vehicle: " + serial);
+                d("Certificate downloaded for vehicle: %s", serial);
                 // Send command to the car through Telematics, make sure that the emulator is
                 // opened for this to work, otherwise "Vehicle asleep" will be returned
                 workWithTelematics(serial);
@@ -74,7 +85,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadFailed(DownloadAccessCertificateError error) {
-                Log.e(TAG, "Could not download a certificate with token: " + error.getMessage());
+                e("Could not download a certificate with token: %s", error.getMessage());
             }
         });
     }
@@ -106,23 +117,23 @@ public class MainActivity extends Activity {
 
                         if (command instanceof LockState) {
                             LockState state = (LockState) command;
-                            Log.d(TAG, "Telematics GetLockState response: ");
-                            Log.d(TAG, "Front left state: " + state
-                                    .getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
-                            Log.d(TAG, "Front right state: " + state
+                            d("Telematics GetLockState response: ");
+                            d("Front left state: %s",
+                                    state.getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
+                            d("Front right state: %s", state
                                     .getOutsideLock(Location.FRONT_RIGHT).getValue().getLock());
-                            Log.d(TAG, "Rear right state: " + state
+                            d("Rear right state: %s", state
                                     .getOutsideLock(Location.REAR_RIGHT).getValue().getLock());
-                            Log.d(TAG, "Rear left state: " + state
+                            d("Rear left state: %s", state
                                     .getOutsideLock(Location.REAR_LEFT).getValue().getLock());
                         } else if (command instanceof VehicleStatus) {
-                            Log.d(TAG, "vin: " + ((VehicleStatus) command).getVin());
+                            d("vin: " + ((VehicleStatus) command).getVin());
                         }
                     }
 
                     @Override
                     public void onCommandFailed(TelematicsError error) {
-                        Log.d(TAG, "Could not send a command through " +
+                        d("Could not send a command through " +
                                 "telematics: " + "" + error.getCode() + " " + error.getMessage());
                     }
                 });
@@ -137,7 +148,7 @@ public class MainActivity extends Activity {
         broadcaster.setListener(new BroadcasterListener() {
             @Override
             public void onStateChanged(Broadcaster.State state) {
-                Log.d(TAG, "Broadcasting state changed: " + state);
+                d("Broadcasting state changed: %s", state);
             }
 
             @Override
@@ -162,8 +173,7 @@ public class MainActivity extends Activity {
                             link.sendCommand(command, new Link.CommandCallback() {
                                 @Override
                                 public void onCommandSent() {
-                                    Log.d(TAG, "Command successfully sent through " +
-                                            "Bluetooth");
+                                    d("Command successfully sent through Bluetooth");
                                 }
 
                                 @Override
@@ -185,8 +195,7 @@ public class MainActivity extends Activity {
                                     Link.CommandCallback() {
                                         @Override
                                         public void onCommandSent() {
-                                            Log.d(TAG, "VS Command successfully " +
-                                                    "sent through Bluetooth");
+                                            d("VS Command successfully sent through Bluetooth");
                                         }
 
                                         @Override
@@ -198,7 +207,7 @@ public class MainActivity extends Activity {
 
                         } else if (command instanceof VehicleStatus) {
                             VehicleStatus status = (VehicleStatus) command;
-                            Log.d("hm", "BLE Vehicle Status received\nvin:" + status.getVin());
+                            d("BLE Vehicle Status received\nvin:%s", status.getVin());
 
                         }
                     }
@@ -215,12 +224,12 @@ public class MainActivity extends Activity {
         broadcaster.startBroadcasting(new Broadcaster.StartCallback() {
             @Override
             public void onBroadcastingStarted() {
-                Log.d(TAG, "Bluetooth broadcasting started");
+                d("Bluetooth broadcasting started");
             }
 
             @Override
             public void onBroadcastingFailed(BroadcastError broadcastError) {
-                Log.d(TAG, "Bluetooth broadcasting started: " + broadcastError);
+                d("Bluetooth broadcasting started: " + broadcastError);
             }
         });
     }
