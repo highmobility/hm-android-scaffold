@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Timber.plant(new Timber.DebugTree()); // enable HMKit logging
         /*
          * Before using HMKit, you'll have to initialise the HMKit singleton
          * with a snippet from the Platform Workspace:
@@ -58,18 +58,10 @@ public class MainActivity extends Activity {
          *     getApplicationContext()
          *   );
          */
-        Timber.plant(new Timber.DebugTree());
+
         // PASTE THE SNIPPET HERE
-        HMKit.getInstance().initialise(
-                "dGVzdLnVeFXsIJTMMDWwwF7qX" +
-                        "/RAYcXdpTzQFbxNYs0vJcq8RpyN1HbA5PCTqJ8CI2urU8PO1YvV1mP4nJuEqHQpq9Dzl0UJiGglp3a3uBqXVTGy0+LwQ0MROMNAYh+Tdp2yIqvU6Uy5yboLcrHLLUHDZEguiGEnVP0pNH+uCaHca4/CiNnmKEm67pZqXtnDDH0NHqP2LEsi",
-                "CDh9oEK5koiw/4VhUT16FEeB6Z+6TRw9mup2aGoYlCM=",
-                "K5mVFoq2rqKwAttWdIyPhwgVL80FNxkkNpgr/ca+ueq3JFn5iMLAMTJOKzG26qwtqrLO" +
-                        "+z2sxxdwWNaItdBUWg==",
-                getApplicationContext());
-        String accessToken =
-                "Rp1wTWvW79qKE6iwGpYBimM12y" +
-                        "-Z_Y5L6oAc2ytoyBc7S6leh88a8kQbCpPDsft7bAU3DNea02FQsJQWKJGB2zU79oTedzkWTIhqu6fv9jamQta9952aWEheHbYJ-xQ8Ng";
+
+        String accessToken = "";
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
@@ -127,7 +119,7 @@ public class MainActivity extends Activity {
                             d("Rear left state: %s", state
                                     .getOutsideLock(Location.REAR_LEFT).getValue().getLock());
                         } else if (command instanceof VehicleStatus) {
-                            d("vin: " + ((VehicleStatus) command).getVin());
+                            d("vin: " + ((VehicleStatus) command).getVin().getValue());
                         }
                     }
 
