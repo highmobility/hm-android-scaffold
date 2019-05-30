@@ -2,7 +2,6 @@ package com.highmobility.samples.androidscaffold;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.highmobility.autoapi.Capabilities;
 import com.highmobility.autoapi.Command;
@@ -29,15 +28,18 @@ import com.highmobility.hmkit.error.LinkError;
 import com.highmobility.hmkit.error.TelematicsError;
 import com.highmobility.value.Bytes;
 
-public class MainActivity extends Activity {
+import timber.log.Timber;
 
-    private static final String TAG = "Scaffold";
+import static timber.log.Timber.d;
+import static timber.log.Timber.e;
+
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Timber.plant(new Timber.DebugTree()); // enable HMKit logging
         /*
          * Before using HMKit, you'll have to initialise the HMKit singleton
          * with a snippet from the Platform Workspace:
@@ -58,12 +60,13 @@ public class MainActivity extends Activity {
          */
 
         // PASTE THE SNIPPET HERE
+
         String accessToken = "";
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
             public void onDownloaded(DeviceSerial serial) {
-                Log.d(TAG, "Certificate downloaded for vehicle: " + serial);
+                d("Certificate downloaded for vehicle: %s", serial);
                 // Send command to the car through Telematics, make sure that the emulator is
                 // opened for this to work, otherwise "Vehicle asleep" will be returned
                 workWithTelematics(serial);
@@ -74,7 +77,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadFailed(DownloadAccessCertificateError error) {
-                Log.e(TAG, "Could not download a certificate with token: " + error.getMessage());
+                e("Could not download a certificate with token: %s", error.getMessage());
             }
         });
     }
@@ -106,23 +109,23 @@ public class MainActivity extends Activity {
 
                         if (command instanceof LockState) {
                             LockState state = (LockState) command;
-                            Log.d(TAG, "Telematics GetLockState response: ");
-                            Log.d(TAG, "Front left state: " + state
-                                    .getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
-                            Log.d(TAG, "Front right state: " + state
+                            d("Telematics GetLockState response: ");
+                            d("Front left state: %s",
+                                    state.getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
+                            d("Front right state: %s", state
                                     .getOutsideLock(Location.FRONT_RIGHT).getValue().getLock());
-                            Log.d(TAG, "Rear right state: " + state
+                            d("Rear right state: %s", state
                                     .getOutsideLock(Location.REAR_RIGHT).getValue().getLock());
-                            Log.d(TAG, "Rear left state: " + state
+                            d("Rear left state: %s", state
                                     .getOutsideLock(Location.REAR_LEFT).getValue().getLock());
                         } else if (command instanceof VehicleStatus) {
-                            Log.d(TAG, "vin: " + ((VehicleStatus) command).getVin());
+                            d("vin: " + ((VehicleStatus) command).getVin().getValue());
                         }
                     }
 
                     @Override
                     public void onCommandFailed(TelematicsError error) {
-                        Log.d(TAG, "Could not send a command through " +
+                        d("Could not send a command through " +
                                 "telematics: " + "" + error.getCode() + " " + error.getMessage());
                     }
                 });
@@ -137,7 +140,7 @@ public class MainActivity extends Activity {
         broadcaster.setListener(new BroadcasterListener() {
             @Override
             public void onStateChanged(Broadcaster.State state) {
-                Log.d(TAG, "Broadcasting state changed: " + state);
+                d("Broadcasting state changed: %s", state);
             }
 
             @Override
@@ -162,8 +165,7 @@ public class MainActivity extends Activity {
                             link.sendCommand(command, new Link.CommandCallback() {
                                 @Override
                                 public void onCommandSent() {
-                                    Log.d(TAG, "Command successfully sent through " +
-                                            "Bluetooth");
+                                    d("Command successfully sent through Bluetooth");
                                 }
 
                                 @Override
@@ -185,8 +187,7 @@ public class MainActivity extends Activity {
                                     Link.CommandCallback() {
                                         @Override
                                         public void onCommandSent() {
-                                            Log.d(TAG, "VS Command successfully " +
-                                                    "sent through Bluetooth");
+                                            d("VS Command successfully sent through Bluetooth");
                                         }
 
                                         @Override
@@ -198,7 +199,7 @@ public class MainActivity extends Activity {
 
                         } else if (command instanceof VehicleStatus) {
                             VehicleStatus status = (VehicleStatus) command;
-                            Log.d("hm", "BLE Vehicle Status received\nvin:" + status.getVin());
+                            d("BLE Vehicle Status received\nvin:%s", status.getVin());
 
                         }
                     }
@@ -215,12 +216,12 @@ public class MainActivity extends Activity {
         broadcaster.startBroadcasting(new Broadcaster.StartCallback() {
             @Override
             public void onBroadcastingStarted() {
-                Log.d(TAG, "Bluetooth broadcasting started");
+                d("Bluetooth broadcasting started");
             }
 
             @Override
             public void onBroadcastingFailed(BroadcastError broadcastError) {
-                Log.d(TAG, "Bluetooth broadcasting started: " + broadcastError);
+                d("Bluetooth broadcasting started: " + broadcastError);
             }
         });
     }
