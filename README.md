@@ -1,4 +1,4 @@
-# Overview
+# Android Scaffold
 
 This app provides a simple scaffold to start building an app with HMKit on Android. These things have been done:
 

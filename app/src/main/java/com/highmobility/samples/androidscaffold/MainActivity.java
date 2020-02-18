@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2014- High-Mobility GmbH (https://high-mobility.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.highmobility.samples.androidscaffold;
 
 import android.app.Activity;
@@ -6,14 +29,9 @@ import android.os.Bundle;
 import com.highmobility.autoapi.Capabilities;
 import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
-import com.highmobility.autoapi.GetCapabilities;
-import com.highmobility.autoapi.GetLockState;
-import com.highmobility.autoapi.GetVehicleStatus;
-import com.highmobility.autoapi.LockState;
-import com.highmobility.autoapi.LockUnlockDoors;
+import com.highmobility.autoapi.Doors;
 import com.highmobility.autoapi.VehicleStatus;
-import com.highmobility.autoapi.value.Location;
-import com.highmobility.autoapi.value.Lock;
+import com.highmobility.autoapi.value.LockState;
 import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
 import com.highmobility.hmkit.BroadcasterListener;
@@ -22,6 +40,7 @@ import com.highmobility.hmkit.ConnectedLinkListener;
 import com.highmobility.hmkit.HMKit;
 import com.highmobility.hmkit.Link;
 import com.highmobility.hmkit.Telematics;
+import com.highmobility.hmkit.error.AuthenticationError;
 import com.highmobility.hmkit.error.BroadcastError;
 import com.highmobility.hmkit.error.DownloadAccessCertificateError;
 import com.highmobility.hmkit.error.LinkError;
@@ -83,14 +102,14 @@ public class MainActivity extends Activity {
     }
 
     private void workWithTelematics(DeviceSerial serial) {
-        HMKit.getInstance().getTelematics().sendCommand(new LockUnlockDoors(Lock.UNLOCKED),
+        HMKit.getInstance().getTelematics().sendCommand(new Doors.LockUnlockDoors(LockState.UNLOCKED),
                 serial, new Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(Bytes bytes) {
                         // Parse command here
                         Command command = CommandResolver.resolve(bytes);
 
-                        if (command instanceof LockState) {
+                        if (command instanceof Doors.State) {
                             // Your code here
                         }
                     }
@@ -100,26 +119,19 @@ public class MainActivity extends Activity {
                     }
                 });
 
-        Command command = new GetLockState();
+        Command command = new Doors.GetState();
         HMKit.getInstance().getTelematics().sendCommand(command, serial,
                 new Telematics.CommandCallback() {
                     @Override
                     public void onCommandResponse(Bytes bytes) {
                         Command command = CommandResolver.resolve(bytes);
 
-                        if (command instanceof LockState) {
-                            LockState state = (LockState) command;
+                        if (command instanceof Doors.State) {
+                            Doors.State state = (Doors.State) command;
                             d("Telematics GetLockState response: ");
-                            d("Front left state: %s",
-                                    state.getOutsideLock(Location.FRONT_LEFT).getValue().getLock());
-                            d("Front right state: %s", state
-                                    .getOutsideLock(Location.FRONT_RIGHT).getValue().getLock());
-                            d("Rear right state: %s", state
-                                    .getOutsideLock(Location.REAR_RIGHT).getValue().getLock());
-                            d("Rear left state: %s", state
-                                    .getOutsideLock(Location.REAR_LEFT).getValue().getLock());
-                        } else if (command instanceof VehicleStatus) {
-                            d("vin: " + ((VehicleStatus) command).getVin().getValue());
+                            d("lock state: %s", state.getLocksState().getValue());
+                        } else if (command instanceof VehicleStatus.State) {
+                            d("vin: " + ((VehicleStatus.State) command).getVin().getValue());
                         }
                     }
 
@@ -147,21 +159,22 @@ public class MainActivity extends Activity {
             public void onLinkReceived(ConnectedLink connectedLink) {
                 connectedLink.setListener(new ConnectedLinkListener() {
                     @Override
-                    public void onAuthorizationRequested(ConnectedLink connectedLink,
-                                                         ConnectedLinkListener.AuthorizationCallback authorizationCallback) {
+                    public void onAuthenticationRequest(ConnectedLink connectedLink,
+                                                        AuthenticationRequestCallback authenticationRequestCallback) {
                         // Approving without user input
-                        authorizationCallback.approve();
-                    }
-
-                    @Override
-                    public void onAuthorizationTimeout(ConnectedLink connectedLink) {
+                        authenticationRequestCallback.approve();
 
                     }
 
                     @Override
-                    public void onStateChanged(final Link link, Link.State state) {
+                    public void onAuthenticationRequestTimeout(ConnectedLink connectedLink) {
+
+                    }
+
+                    @Override
+                    public void onStateChanged(Link link, Link.State state, Link.State state1) {
                         if (link.getState() == Link.State.AUTHENTICATED) {
-                            Bytes command = new GetCapabilities();
+                            Bytes command = new Capabilities.GetCapabilities();
                             link.sendCommand(command, new Link.CommandCallback() {
                                 @Override
                                 public void onCommandSent() {
@@ -177,13 +190,19 @@ public class MainActivity extends Activity {
                     }
 
                     @Override
+                    public void onAuthenticationFailed(Link link,
+                                                       AuthenticationError authenticationError) {
+
+                    }
+
+                    @Override
                     public void onCommandReceived(final Link link, Bytes bytes) {
                         final Command command;
 
                         command = CommandResolver.resolve(bytes);
-                        if (command instanceof Capabilities) {
+                        if (command instanceof Capabilities.State) {
 
-                            link.sendCommand(new GetVehicleStatus(), new
+                            link.sendCommand(new VehicleStatus.GetVehicleStatus(), new
                                     Link.CommandCallback() {
                                         @Override
                                         public void onCommandSent() {
@@ -191,15 +210,14 @@ public class MainActivity extends Activity {
                                         }
 
                                         @Override
-                                        public void onCommandFailed(LinkError
-                                                                            linkError) {
+                                        public void onCommandFailed(LinkError linkError) {
 
                                         }
                                     });
 
-                        } else if (command instanceof VehicleStatus) {
-                            VehicleStatus status = (VehicleStatus) command;
-                            d("BLE Vehicle Status received\nvin:%s", status.getVin());
+                        } else if (command instanceof VehicleStatus.State) {
+                            VehicleStatus.State status = (VehicleStatus.State) command;
+                            d("BLE Vehicle Status received\nvin:%s", status.getVin().getValue());
 
                         }
                     }
