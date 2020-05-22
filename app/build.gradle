@@ -24,10 +24,11 @@ android {
 }
 
 dependencies {
-    implementation('com.highmobility:hmkit-android:2.0.2@aar') {
+    implementation('com.highmobility:hmkit-android:2.0.3@aar') {
         transitive = true
     }
     implementation 'com.highmobility:hmkit-auto-api:3.11.1'
+
     implementation 'at.favre.lib:slf4j-timber:1.0.0' // AutoAPI log binding to Timber
     testImplementation 'junit:junit:4.12'
 }
