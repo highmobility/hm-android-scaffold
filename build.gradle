@@ -20,13 +20,6 @@ allprojects {
     repositories {
         jcenter()
         google()
-        /*maven {
-            url "http://jfrog.high-mobility.com/artifactory/gradle-dev-local/"
-            credentials {
-                username devReadUser
-                password devReadPassword
-            }
-        }*/
     }
 }
 
