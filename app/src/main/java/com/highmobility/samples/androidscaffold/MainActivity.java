@@ -30,7 +30,8 @@ import com.highmobility.autoapi.Capabilities;
 import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Doors;
-import com.highmobility.autoapi.VehicleStatus;
+import com.highmobility.autoapi.FailureMessage;
+import com.highmobility.autoapi.VehicleInformation;
 import com.highmobility.autoapi.value.LockState;
 import com.highmobility.crypto.value.DeviceSerial;
 import com.highmobility.hmkit.Broadcaster;
@@ -80,7 +81,16 @@ public class MainActivity extends Activity {
 
         // PASTE THE SNIPPET HERE
 
-        String accessToken = "";
+        HMKit.webUrl = getResources().getString(R.string.devWebUrl);
+
+        HMKit.getInstance().initialise(
+                getResources().getString(R.string.devDeviceCert),
+                getResources().getString(R.string.devPrivateKey),
+                getResources().getString(R.string.devIssuerPublicKey),
+                getApplicationContext()
+        );
+
+        String accessToken = getResources().getString(R.string.devAccessToken);
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
@@ -111,6 +121,7 @@ public class MainActivity extends Activity {
 
                         if (command instanceof Doors.State) {
                             // Your code here
+                            d("Telematics LockUnlockDoors response Doors.State received");
                         }
                     }
 
@@ -120,27 +131,27 @@ public class MainActivity extends Activity {
                 });
 
         Command command = new Doors.GetState();
-        HMKit.getInstance().getTelematics().sendCommand(command, serial,
-                new Telematics.CommandCallback() {
-                    @Override
-                    public void onCommandResponse(Bytes bytes) {
-                        Command command = CommandResolver.resolve(bytes);
+        HMKit.getInstance().getTelematics().sendCommand(command, serial, new Telematics.CommandCallback() {
+            @Override
+            public void onCommandResponse(Bytes bytes) {
+                Command command = CommandResolver.resolve(bytes);
 
-                        if (command instanceof Doors.State) {
-                            Doors.State state = (Doors.State) command;
-                            d("Telematics GetLockState response: ");
-                            d("lock state: %s", state.getLocksState().getValue());
-                        } else if (command instanceof VehicleStatus.State) {
-                            d("vin: " + ((VehicleStatus.State) command).getVin().getValue());
-                        }
-                    }
+                if (command instanceof Doors.State) {
+                    Doors.State state = (Doors.State) command;
+                    d("Telematics GetLockState response: ");
+                    d("lock state: %s", state.getLocksState().getValue());
+                } else if (command instanceof VehicleInformation.State) {
+                    d("Telematics VehicleInformation state: ");
+                    d("model name: " + ((VehicleInformation.State) command).getModelName());
+                }
+            }
 
-                    @Override
-                    public void onCommandFailed(TelematicsError error) {
-                        d("Could not send a command through " +
-                                "telematics: " + "" + error.getCode() + " " + error.getMessage());
-                    }
-                });
+            @Override
+            public void onCommandFailed(TelematicsError error) {
+                d("Could not send a command through " +
+                        "telematics: " + "" + error.getCode() + " " + error.getMessage());
+            }
+        });
     }
 
     private void workWithBluetooth() {
@@ -174,11 +185,12 @@ public class MainActivity extends Activity {
                     @Override
                     public void onStateChanged(Link link, Link.State state, Link.State state1) {
                         if (link.getState() == Link.State.AUTHENTICATED) {
+                            // send get capabilities after successful authentication
                             Bytes command = new Capabilities.GetCapabilities();
                             link.sendCommand(command, new Link.CommandCallback() {
                                 @Override
                                 public void onCommandSent() {
-                                    d("Command successfully sent through Bluetooth");
+                                    d("Get capabilities command successfully sent through Bluetooth");
                                 }
 
                                 @Override
@@ -201,12 +213,11 @@ public class MainActivity extends Activity {
 
                         command = CommandResolver.resolve(bytes);
                         if (command instanceof Capabilities.State) {
-
-                            link.sendCommand(new VehicleStatus.GetVehicleStatus(), new
+                            link.sendCommand(new VehicleInformation.GetVehicleInformation(), new
                                     Link.CommandCallback() {
                                         @Override
                                         public void onCommandSent() {
-                                            d("VS Command successfully sent through Bluetooth");
+                                            d("Get vehicle information command successfully sent through Bluetooth");
                                         }
 
                                         @Override
@@ -214,11 +225,13 @@ public class MainActivity extends Activity {
 
                                         }
                                     });
-
-                        } else if (command instanceof VehicleStatus.State) {
-                            VehicleStatus.State status = (VehicleStatus.State) command;
-                            d("BLE Vehicle Status received\nvin:%s", status.getVin().getValue());
-
+                        } else if (command instanceof VehicleInformation.State) {
+                            VehicleInformation.State status = (VehicleInformation.State) command;
+                            d("BLE Vehicle Information received\nmodel name:%s", status.getModelName().getValue());
+                        } else if (command instanceof FailureMessage.State) {
+                            d("Failure message received: %s %s",
+                                    ((FailureMessage.State) command).getFailureReason().getValue(),
+                                    ((FailureMessage.State) command).getFailureDescription().getValue());
                         }
                     }
 
