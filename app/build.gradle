@@ -24,7 +24,7 @@ android {
 }
 
 dependencies {
-    implementation('com.highmobility:hmkit-android:2.0.4@aar') {
+    implementation('com.highmobility:hmkit-android:2.0.5@aar') {
         transitive = true
     }
     implementation 'com.highmobility:hmkit-auto-api:3.12.0'
