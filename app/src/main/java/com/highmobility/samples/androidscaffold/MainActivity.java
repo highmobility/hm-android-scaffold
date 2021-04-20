@@ -81,16 +81,17 @@ public class MainActivity extends Activity {
 
         // PASTE THE SNIPPET HERE
 
-        HMKit.webUrl = getResources().getString(R.string.devWebUrl);
-
         HMKit.getInstance().initialise(
-                getResources().getString(R.string.devDeviceCert),
-                getResources().getString(R.string.devPrivateKey),
-                getResources().getString(R.string.devIssuerPublicKey),
+                "",
+                "",
+                "",
                 getApplicationContext()
         );
 
-        String accessToken = getResources().getString(R.string.devAccessToken);
+        /*
+         * Also, the access token from the emulator should be pasted here
+         */
+        String accessToken = "";
 
         HMKit.getInstance().downloadAccessCertificate(accessToken, new HMKit.DownloadCallback() {
             @Override
