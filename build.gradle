@@ -21,7 +21,7 @@ allprojects {
         mavenCentral()
         google()
         maven {
-            url "https://oss.sonatype.org/content/repositories/comhigh-mobility-1058"
+            url "https://oss.sonatype.org/content/repositories/comhigh-mobility-1061"
         }
     }
 }
